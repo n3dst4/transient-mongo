@@ -1,0 +1,32 @@
+{
+  "name": "transient-mongo",
+  "version": "0.0.1",
+  "description": "Create throwaway MongoDB instances for testing",
+  "main": "index.js",
+  "scripts": {
+    "test": "mocha"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/n3dst4/transient-mongo.git"
+  },
+  "keywords": [
+    "mongo",
+    "testing"
+  ],
+  "author": "Neil de carteret",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/n3dst4/transient-mongo/issues"
+  },
+  "dependencies": {
+    "mkdirp": "~0.3.5",
+    "rimraf": "~2.2.6",
+    "mongoose": "~3.8.8",
+    "random-port": "git+https://github.com/n3dst4/random-port.git"
+  },
+  "devDependencies": {
+    "mongodb": "~1.3.23",
+    "chai": "~1.9.0"
+  }
+}
