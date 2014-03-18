@@ -5,6 +5,10 @@ var transientMongo = require("..");
 var MongoClient = require("mongodb").MongoClient;
 var chai = require("chai");
 var should = chai.should();
+var path = require("path");
+var fs = require("fs");
+var _ = require("lodash");
+var backoff = require("backoff");
 
 var SLOWNESS = 10000;
 
@@ -47,8 +51,46 @@ describe('transient-mongo', function () {
     });
 
 
-    it.skip('should not leave any folders lying around', function (done) {
-        
-    });
+    it('should not leave any folders lying around', function (done) {
+    	this.timeout(10000);
+        var tmpDir = path.join(process.cwd(), "tmp");
+        var tmpMatch = /^transient-mongo-/;
 
+        // this backoff craziness is because it seems that on WIN32 (at least,
+        // haven't tried elsewhere) the folder deletion sometimes doesn't take
+        // effect immediately. 
+        // See https://github.com/MathieuTurcotte/node-backoff
+
+        var fibonacciBackoff = backoff.fibonacci({
+            randomisationFactor: 0,
+            initialDelay: 100,
+            maxDelay: 1000
+        });
+
+        fibonacciBackoff.failAfter(10);
+
+        fibonacciBackoff.on('backoff', function(number, delay) {
+            console.log("waiting for folder to be empty" + ' ' + delay + 'ms');
+        });
+
+        fibonacciBackoff.on('ready', function(number, delay) {
+            fs.readdir(tmpDir, function (err, files) {
+                files = _(files).filter(function (file) {
+                    return tmpMatch.test(file);
+                }).value();
+                if (files.length === 0) {
+                	done();
+                }
+                else {
+            		fibonacciBackoff.backoff();    	
+                }
+            });
+        });
+
+        fibonacciBackoff.on('fail', function() {
+            done(new Error("folder was not empty"));
+        });
+
+        fibonacciBackoff.backoff();
+    });
 });

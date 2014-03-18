@@ -7,6 +7,7 @@ var rimraf = require("rimraf");
 var cp = require("child_process");
 var mongoose = require("mongoose");
 var randomPort = require("random-port");
+var fs = require("fs");
 
 var BIND_IP = "127.4.8.15";
 var tmpDir = path.join(process.cwd(), "tmp");
@@ -41,17 +42,15 @@ var create = module.exports = function (done) {
         });
 
         var errLog = fs.createWriteStream(errPath, {flags: 'a'});
-        child.stderr.pipe(errLog, { end: false });
+        child.stderr.pipe(errLog, { end: true });
 
         var url = "mongodb://" + BIND_IP + ":" + port;
         var destroy = function (destroyDone) {
             child.kill();
             child.on("exit", function () {
-                setTimeout(function () {
-                    rimraf(localDir, function () {
-                        destroyDone();
-                    });
-                }, 1000);
+                rimraf(localDir, function (err) {
+                    destroyDone(err);
+                });
             });
         };
         done(null, {url: url, destroy: destroy});
@@ -65,7 +64,8 @@ var create = module.exports = function (done) {
  */
 module.exports.connectMongoose = function (done) {
     if (module.mongooseMongo) {
-        return done(new Error("Mongoose has already been hooked up to transient-mongo"));
+        return done(new Error(
+            "Mongoose has already been hooked up to transient-mongo"));
     }
     create(function(err, mongo) {
         if (err) {

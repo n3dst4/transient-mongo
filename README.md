@@ -59,6 +59,13 @@ Mongoose.
 Attempting to `.connectMongoose()` twice without calling `.disconnectMongoose()`
 is an error. You can call `.disconnectMongoose()` as many times as you like.
 
+
+## Tests
+
+```
+npm test
+```
+
 ## Notes
 
 ...TODO...
